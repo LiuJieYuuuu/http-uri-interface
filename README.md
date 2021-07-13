@@ -22,6 +22,7 @@ UserDao uri = conf.getUri(UserDao.class);
 
 接口示例：
 @ParamUri(url = "http://localhost:8080/mvc/getGetController",requestType = HttpEnum.GET)
+
 Map getUserInfo(@ParamKey(key = "name") String name);
 
 
