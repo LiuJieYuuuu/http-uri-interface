@@ -1,6 +1,7 @@
 package com.httpuri.iagent.request;
 
 import com.alibaba.fastjson.JSON;
+import com.httpuri.iagent.builder.HttpUriBean;
 import com.httpuri.iagent.constant.HttpEnum;
 import com.httpuri.iagent.constant.HttpConstant;
 
@@ -12,6 +13,11 @@ import java.util.Map;
 
 public class HttpUtil {
 
+    public static String sendHttp(HttpUriBean bean){
+        if (bean == null)
+            throw new IllegalArgumentException("args is null");
+        return sendHttp(bean.getUrl(),bean.getParams(), bean.getRequestType(),bean.getContentType(),bean.getConnectionTime(),bean.getReadTime());
+    }
 
     /**
      * 默认参数请求
@@ -88,7 +94,6 @@ public class HttpUtil {
                 if(type.equals(HttpEnum.GET))
                     url += "?" + URLEncoder.encode(params,"UTF-8");
             }
-            System.out.println("url:" + url);
             URL uri = new URL(url);
             HttpURLConnection urlConnection = (HttpURLConnection) uri.openConnection();
             if(type.equals(HttpEnum.GET)){

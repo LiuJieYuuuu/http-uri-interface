@@ -11,10 +11,6 @@ public class UriInvocationHandler implements InvocationHandler {
 
     private MethodHandler methodHandler = new MethodHandler();
 
-    public UriInvocationHandler(){
-        super();
-    }
-
     public UriInvocationHandler(HttpUriConf conf){
         this.conf = conf;
     }
@@ -23,6 +19,7 @@ public class UriInvocationHandler implements InvocationHandler {
         if(Object.class.equals(method.getDeclaringClass())){
             return method.invoke(this,args);
         }else{
+            methodHandler.setConf(conf);
             return methodHandler.getMethodResult(method,args);
         }
     }

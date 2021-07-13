@@ -3,12 +3,13 @@ package com.httpuri.iagent.builder;
 import com.httpuri.iagent.constant.HttpConstant;
 import com.httpuri.iagent.constant.HttpEnum;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  * 使用建造者模式装载请求数据Bean
  */
-public class HttpUriBean {
+public class HttpUriBean implements Cloneable,Serializable {
 
     String url;
 
@@ -84,7 +85,17 @@ public class HttpUriBean {
                 '}';
     }
 
-    public static class HttpUriBeanBuidler{
+    @Override
+    public HttpUriBean clone() {
+        try {
+            return (HttpUriBean) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static class HttpUriBeanBuilder{
 
         String url;
 
@@ -122,41 +133,41 @@ public class HttpUriBean {
             return readTime;
         }
 
-        public HttpUriBeanBuidler(){
+        public HttpUriBeanBuilder(){
             super();
         }
 
-        public HttpUriBeanBuidler(String url){
+        public HttpUriBeanBuilder(String url){
             super();
             this.url = url;
         }
 
-        public HttpUriBeanBuidler url(String url){
+        public HttpUriBeanBuilder url(String url){
             this.url = url;
             return this;
         }
 
-        public HttpUriBeanBuidler requestType(HttpEnum requestType){
+        public HttpUriBeanBuilder requestType(HttpEnum requestType){
             this.requestType = requestType;
             return this;
         }
 
-        public HttpUriBeanBuidler contentType(String contentType){
+        public HttpUriBeanBuilder contentType(String contentType){
             this.contentType = contentType;
             return this;
         }
 
-        public HttpUriBeanBuidler params(Map params){
+        public HttpUriBeanBuilder params(Map params){
             this.params = params;
             return this;
         }
 
-        public HttpUriBeanBuidler connectionTime(int connectionTime){
+        public HttpUriBeanBuilder connectionTime(int connectionTime){
             this.connectionTime = connectionTime;
             return this;
         }
 
-        public HttpUriBeanBuidler readTime(int readTime){
+        public HttpUriBeanBuilder readTime(int readTime){
             this.readTime = readTime;
             return this;
         }
@@ -167,7 +178,7 @@ public class HttpUriBean {
 
     }
 
-    private HttpUriBean (HttpUriBeanBuidler buidler){
+    private HttpUriBean (HttpUriBeanBuilder buidler){
         super();
         this.url = buidler.getUrl();
         this.connectionTime = buidler.getConnectionTime();

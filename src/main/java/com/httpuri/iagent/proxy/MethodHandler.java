@@ -1,8 +1,10 @@
 package com.httpuri.iagent.proxy;
 
 import com.alibaba.fastjson.JSON;
+import com.httpuri.iagent.HttpUriConf;
 import com.httpuri.iagent.annotation.ParamKey;
 import com.httpuri.iagent.annotation.ParamUri;
+import com.httpuri.iagent.builder.HttpUriBean;
 import com.httpuri.iagent.constant.HttpEnum;
 import com.httpuri.iagent.request.HttpUtil;
 
@@ -16,6 +18,12 @@ import java.util.Map;
  */
 public class MethodHandler {
 
+    private HttpUriConf conf;
+
+    public void setConf(HttpUriConf conf) {
+        this.conf = conf;
+    }
+
     /**
      * 根据方法上的注解获取请求结果集
      * @param method
@@ -23,11 +31,6 @@ public class MethodHandler {
      * @return
      */
     public Object getMethodResult(Method method, Object[] args){
-        ParamUri annotation = method.getAnnotation(ParamUri.class);
-        String uri = annotation.url();
-        String contentType = annotation.contentType();
-        HttpEnum requestType = annotation.requestType();
-
         Parameter[] parameters = method.getParameters();
         Map<String, Object> param = new HashMap<>();
         for (int i = 0 ; i < parameters.length ; i ++){
@@ -40,7 +43,15 @@ public class MethodHandler {
             }
         }
 
-        String result = HttpUtil.sendHttp(uri, param, requestType, contentType);
+
+        HttpUriBean httpUriBean = null;
+        try {
+            httpUriBean = conf.getUriBeanMap().get(method);
+            httpUriBean.setParams(param);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("iagent warn the method is not exsits @ParamUri:" + method);
+        }
+        String result = HttpUtil.sendHttp(httpUriBean);
 
         return packagingResultObjectType(result, method.getReturnType());
     }
