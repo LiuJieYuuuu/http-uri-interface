@@ -11,14 +11,14 @@ import java.util.Map;
 @UrlScanner(basePackages = "com.httpuri.iagent.dao")
 public interface UserDao {
 
-    @ParamUri(url = "http://localhost:8080/mvc/getGetController",HttpConstant = HttpEnum.GET)
+    @ParamUri(url = "http://localhost:8080/mvc/getGetController",requestType = HttpEnum.GET)
     Map getUserInfo(@ParamKey(key = "name") String name);
 
 
-    @ParamUri(url = "http://localhost:8080/mvc/getPostController",HttpConstant = HttpEnum.POST)
+    @ParamUri(url = "http://localhost:8080/mvc/getPostController",requestType = HttpEnum.POST)
     Map getUserPostInfo(@ParamKey(key = "name") String name);
 
-    @ParamUri(url = "http://localhost:8080/mvc/getPostControllerJson",HttpConstant = HttpEnum.POST,contentType = HttpConstant.APPLICATION_JSON_UTF8)
+    @ParamUri(url = "http://localhost:8080/mvc/getPostControllerJson",requestType = HttpEnum.POST,contentType = HttpConstant.APPLICATION_JSON_UTF8)
     Map getUserInfo(Map param);
 
 }

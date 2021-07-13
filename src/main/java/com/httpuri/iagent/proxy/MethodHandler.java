@@ -26,7 +26,7 @@ public class MethodHandler {
         ParamUri annotation = method.getAnnotation(ParamUri.class);
         String uri = annotation.url();
         String contentType = annotation.contentType();
-        HttpEnum HttpConstant = annotation.HttpConstant();
+        HttpEnum requestType = annotation.requestType();
 
         Parameter[] parameters = method.getParameters();
         Map<String, Object> param = new HashMap<>();
@@ -40,7 +40,7 @@ public class MethodHandler {
             }
         }
 
-        String result = HttpUtil.sendHttp(uri, param, HttpConstant, contentType);
+        String result = HttpUtil.sendHttp(uri, param, requestType, contentType);
 
         return packagingResultObjectType(result, method.getReturnType());
     }

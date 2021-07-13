@@ -13,7 +13,7 @@ public @interface ParamUri {
 
     String url();
 
-    HttpEnum HttpConstant() default HttpEnum.GET;
+    HttpEnum requestType() default HttpEnum.GET;
 
     String contentType() default HttpConstant.X_WWW_FORM_URLENCODED;
 
