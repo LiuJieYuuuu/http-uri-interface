@@ -1,29 +1,17 @@
-package com.httpuri.iagent.util;
+package com.httpuri.iagent.request;
 
 import com.alibaba.fastjson.JSON;
+import com.httpuri.iagent.constant.HttpEnum;
+import com.httpuri.iagent.constant.HttpConstant;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.Map;
 
 public class HttpUtil {
 
-    private static final int CONNECTION_TIME = 2000;
-
-    private static final int READ_TIME = 10000;
-
-    public static final String X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-
-    public static final String APPLICATION_JSON = "application/json";
-
-    public static final String APPLICATION_JSON_UTF8 = "application/json;charset=utf-8";
-
-    public static enum HttpEnum{
-        GET,POST
-    }
 
     /**
      * 默认参数请求
@@ -31,7 +19,7 @@ public class HttpUtil {
      * @return
      */
     public static String sendHttp(String url){
-        return sendHttp(url,null, HttpEnum.GET,X_WWW_FORM_URLENCODED);
+        return sendHttp(url,null, HttpEnum.GET,HttpConstant.X_WWW_FORM_URLENCODED);
     }
 
     /**
@@ -41,7 +29,7 @@ public class HttpUtil {
      * @return
      */
     public static String sendHttp(String url, Map param){
-        return sendHttp(url,param,HttpEnum.GET,X_WWW_FORM_URLENCODED);
+        return sendHttp(url,param,HttpEnum.GET,HttpConstant.X_WWW_FORM_URLENCODED);
     }
 
     /**
@@ -52,7 +40,7 @@ public class HttpUtil {
      * @return
      */
     public static String sendHttp(String url, Map param, HttpEnum type){
-        return sendHttp(url,param,type,X_WWW_FORM_URLENCODED,CONNECTION_TIME,READ_TIME);
+        return sendHttp(url,param,type,HttpConstant.X_WWW_FORM_URLENCODED,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
     }
 
     /**
@@ -63,7 +51,7 @@ public class HttpUtil {
      * @return
      */
     public static String sendHttp(String url, Map param, String contentType){
-        return sendHttp(url,param,HttpEnum.POST,contentType,CONNECTION_TIME,READ_TIME);
+        return sendHttp(url,param,HttpEnum.POST,contentType,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
     }
 
     /**
@@ -76,7 +64,7 @@ public class HttpUtil {
      */
     public static String sendHttp(String url, Map param, HttpEnum type,
                                   String contentType){
-        return sendHttp(url,param,type,contentType,CONNECTION_TIME,READ_TIME);
+        return sendHttp(url,param,type,contentType,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
     }
 
     /**
@@ -114,7 +102,7 @@ public class HttpUtil {
                 setHttpUrlConnectionProperty(urlConnection,contentType,connectionTime,readTime);
                 if (params != null){
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
-                    if(contentType.equals(APPLICATION_JSON) || contentType.equals(APPLICATION_JSON_UTF8))
+                    if(contentType.equals(HttpConstant.APPLICATION_JSON) || contentType.equals(HttpConstant.APPLICATION_JSON_UTF8))
                         writer.write(JSON.toJSONString(param));
                     else
                         writer.write(params);
@@ -144,7 +132,7 @@ public class HttpUtil {
         if(contentType != null && !"".equals(contentType)){
             urlConnection.setRequestProperty("Content-Type",contentType);
         }else{
-            urlConnection.setRequestProperty("Content-Type",X_WWW_FORM_URLENCODED);
+            urlConnection.setRequestProperty("Content-Type",HttpConstant.X_WWW_FORM_URLENCODED);
 
         }
 

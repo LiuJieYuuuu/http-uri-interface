@@ -14,6 +14,7 @@ public class Test {
         UserDao uri = conf.getUri(UserDao.class);
         System.out.println(uri.getUserInfo("zhuzai"));
 
+        System.out.println(uri.getUserPostInfo("POST"));
 
         System.out.println(uri.getUserInfo(new HashMap(){
             {
