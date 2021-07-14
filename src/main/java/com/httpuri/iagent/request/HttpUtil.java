@@ -92,7 +92,7 @@ public class HttpUtil {
             if(param != null && !param.isEmpty()){
                 params = changeParam(param);
                 if(type.equals(HttpEnum.GET))
-                    url += "?" + URLEncoder.encode(params,"UTF-8");
+                    url += "?" + params;
             }
             URL uri = new URL(url);
             HttpURLConnection urlConnection = (HttpURLConnection) uri.openConnection();
@@ -152,12 +152,12 @@ public class HttpUtil {
      * @param param
      * @return
      */
-    private static String changeParam(Map<?,?> param){
+    private static String changeParam(Map<?,?> param) throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<?,?> entry : param.entrySet()) {
             sb.append(entry.getKey() == null ? "" : entry.getKey().toString());
             sb.append("=");
-            sb.append(entry.getValue() == null ? "" : entry.getValue().toString());
+            sb.append(URLEncoder.encode(entry.getValue() == null ? "" : entry.getValue().toString(),"UTF-8"));
             sb.append("&");
         }
         if(sb.length() != 0){
