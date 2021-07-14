@@ -11,3 +11,8 @@
 
 ### v.1.1.0
 iagent的RELEASE版本，较为稳定的版本，推荐使用
+
+### v.1.1.1
+1、解决了返回值类型为String报错问题
+
+2、可支持自定义HTTP请求工具类，默认为自带的SimpleHttpExecutor
