@@ -3,7 +3,10 @@ package com.httpuri.iagent.scan;
 import com.httpuri.iagent.HttpUriConf;
 import com.httpuri.iagent.annotation.ParamUri;
 import com.httpuri.iagent.builder.HttpUriBean;
+import com.httpuri.iagent.builder.HttpUriWrapper;
 import com.httpuri.iagent.proxy.UriProxy;
+import com.httpuri.iagent.request.HttpExecutor;
+import com.httpuri.iagent.request.SimpleHttpExecutor;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -16,9 +19,7 @@ public class ClassPathBeanScanner {
 
     private HttpUriConf conf;
 
-    private ClassPathBeanScanner(){
-        super();
-    }
+    private HttpUriWrapperHandler wrapperHandler = new HttpUriWrapperHandler();
 
     public ClassPathBeanScanner(HttpUriConf conf){
         super();
@@ -26,7 +27,7 @@ public class ClassPathBeanScanner {
         proxy = new UriProxy(conf);
     }
 
-    public void scannerPackages(Map<Class,Object> uriMap, Map<Method,HttpUriBean> uriBeanMap, String... basePackages) {
+    public void scannerPackages(Map<Class,Object> uriMap, Map<Method,HttpUriWrapper> uriWrapperMap, String... basePackages) {
         for(String packages : basePackages){
             try {
                 String path = this.getClass().getResource("/").getPath();
@@ -43,7 +44,7 @@ public class ClassPathBeanScanner {
                         throw new IllegalArgumentException(" under the package path includes directories:path" + packages);
                     }
                     Class<?> cls = Class.forName(classPath);
-                    register(cls,uriBeanMap);
+                    register(cls,uriWrapperMap);
                     uriMap.put(cls,proxy.newInstance(cls));
                 }
             } catch (IllegalArgumentException e) {
@@ -55,19 +56,12 @@ public class ClassPathBeanScanner {
         }
     }
 
-    private <T> void register(Class<T> cls,Map<Method,HttpUriBean> uriBeanMap){
+    private <T> void register(Class<T> cls,Map<Method,HttpUriWrapper> uriWrapperMap){
         ParamUri clsAnno = cls.getAnnotation(ParamUri.class);
-        HttpUriBean.HttpUriBeanBuilder builder = new HttpUriBean.HttpUriBeanBuilder();
-        HttpUriBean bean = null;
-        if(clsAnno != null)
-            bean = builder.url(clsAnno.url())
-                    .requestType(clsAnno.requestType())
-                    .contentType(clsAnno.contentType())
-                    .connectionTime(clsAnno.connectionTime())
-                    .readTime(clsAnno.readTime())
-                    .build();
-        else
-            bean = builder.build();
+        HttpUriWrapper wrapper = null;
+        wrapper = wrapperHandler.handleHttpUriBean(clsAnno, wrapper);
+        wrapper = wrapperHandler.handleHttpExecutor(clsAnno, wrapper);
+
         Method[] methods = cls.getDeclaredMethods();
         for(int i = 0;i < methods.length; i++){
             ParamUri methodAnno = methods[i].getAnnotation(ParamUri.class);
@@ -75,7 +69,7 @@ public class ClassPathBeanScanner {
                 System.out.println("iagent warn the method is not exsits @ParamUri:" + methods[i]);
                 continue;
             }
-            HttpUriBean cloneBean = bean.clone();
+            HttpUriBean cloneBean = wrapper.getBean().clone();
             String url = methodAnno.url();
             if(cloneBean.getUrl() == null)
                 cloneBean.setUrl(methodAnno.url());
@@ -90,7 +84,15 @@ public class ClassPathBeanScanner {
             cloneBean.setReadTime(methodAnno.readTime());
             cloneBean.setRequestType(methodAnno.requestType());
             /*System.out.println(methods[i] + " url:" + cloneBean.getUrl());*/
-            uriBeanMap.put(methods[i],cloneBean);
+            HttpExecutor executor = wrapper.getExecutor();
+            HttpUriWrapper childWrapper = new HttpUriWrapper(cloneBean);
+            if( executor == null || (!methodAnno.httpExecutor().equals(SimpleHttpExecutor.class)
+                    && !methodAnno.httpExecutor().equals(executor.getClass())) ){
+                wrapperHandler.handleHttpExecutor(methodAnno, childWrapper);
+            }else{
+                childWrapper.setExecutor(executor);
+            }
+            uriWrapperMap.put(methods[i],childWrapper);
         }
 
 

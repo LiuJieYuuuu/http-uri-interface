@@ -3,10 +3,7 @@ package com.httpuri.iagent.proxy;
 import com.alibaba.fastjson.JSON;
 import com.httpuri.iagent.HttpUriConf;
 import com.httpuri.iagent.annotation.ParamKey;
-import com.httpuri.iagent.annotation.ParamUri;
-import com.httpuri.iagent.builder.HttpUriBean;
-import com.httpuri.iagent.constant.HttpEnum;
-import com.httpuri.iagent.request.HttpUtil;
+import com.httpuri.iagent.builder.HttpUriWrapper;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -43,22 +40,30 @@ public class MethodHandler {
             }
         }
 
-
-        HttpUriBean httpUriBean = null;
+        HttpUriWrapper wrapper = null;
         try {
-            httpUriBean = conf.getUriBeanMap().get(method);
-            httpUriBean.setParams(param);
+            wrapper = conf.getUriBeanMap().get(method);
+            wrapper.getBean().setParams(param);
         } catch (Exception e) {
-            throw new IllegalArgumentException("iagent warn the method is not exsits @ParamUri:" + method);
+            throw new IllegalArgumentException("iagent warn the method is not exists @ParamUri:" + method);
         }
-        String result = HttpUtil.sendHttp(httpUriBean);
+        Object result = wrapper.getExecutor().sendHttp(wrapper.getBean());
 
-        return packagingResultObjectType(result, method.getReturnType());
+        return packagingResultObjectType(result == null ? null : result.toString(), method.getReturnType());
     }
 
 
     private <T> T packagingResultObjectType(String result,Class<T> cls){
-        return JSON.parseObject(result,cls);
+        try {
+            if(result == null)
+                return null;
+            else if(cls.equals(String.class))
+                return (T) result;
+            else
+                return JSON.parseObject(result,cls);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Not Support JSON Type Change");
+        }
     }
 
 }

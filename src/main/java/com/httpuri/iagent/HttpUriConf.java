@@ -1,6 +1,7 @@
 package com.httpuri.iagent;
 
 import com.httpuri.iagent.builder.HttpUriBean;
+import com.httpuri.iagent.builder.HttpUriWrapper;
 import com.httpuri.iagent.scan.ClassPathBeanScanner;
 
 import java.lang.reflect.Method;
@@ -16,7 +17,7 @@ public class HttpUriConf {
 
     Map<Class,Object> uriMap = new ConcurrentHashMap<>(4);
 
-    Map<Method,HttpUriBean> uriBeanMap = new ConcurrentHashMap<>(4);
+    Map<Method,HttpUriWrapper> uriWrapperMap = new ConcurrentHashMap<>(4);
 
     public HttpUriConf(){
         super();
@@ -27,8 +28,8 @@ public class HttpUriConf {
         init();
     }
 
-    public Map<Method, HttpUriBean> getUriBeanMap() {
-        return uriBeanMap;
+    public Map<Method, HttpUriWrapper> getUriBeanMap() {
+        return uriWrapperMap;
     }
 
     public String [] getBasePackages() {
@@ -43,9 +44,9 @@ public class HttpUriConf {
      * 初始化包及扫描
      */
     public void init(){
-        if(this.basePackages != null){
+        if(this.basePackages != null && uriMap.isEmpty() && uriWrapperMap.isEmpty()){
             ClassPathBeanScanner scanner = new ClassPathBeanScanner(this);
-            scanner.scannerPackages(this.uriMap,this.uriBeanMap,this.basePackages);
+            scanner.scannerPackages(this.uriMap,this.uriWrapperMap,this.basePackages);
         }
 
     }

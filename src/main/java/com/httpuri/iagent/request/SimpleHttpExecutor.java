@@ -11,12 +11,13 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 
-public class HttpUtil {
+public class SimpleHttpExecutor implements HttpExecutor {
 
-    public static String sendHttp(HttpUriBean bean){
+
+    public String sendHttp(HttpUriBean bean){
         if (bean == null)
             throw new IllegalArgumentException("args is null");
-        return sendHttp(bean.getUrl(),bean.getParams(), bean.getRequestType(),bean.getContentType(),bean.getConnectionTime(),bean.getReadTime());
+        return this.sendHttp(bean.getUrl(),bean.getParams(), bean.getRequestType(),bean.getContentType(),bean.getConnectionTime(),bean.getReadTime());
     }
 
     /**
@@ -24,8 +25,8 @@ public class HttpUtil {
      * @param url
      * @return
      */
-    public static String sendHttp(String url){
-        return sendHttp(url,null, HttpEnum.GET,HttpConstant.X_WWW_FORM_URLENCODED);
+    public String sendHttp(String url){
+        return this.sendHttp(url,null, HttpEnum.GET,HttpConstant.X_WWW_FORM_URLENCODED);
     }
 
     /**
@@ -34,8 +35,8 @@ public class HttpUtil {
      * @param param
      * @return
      */
-    public static String sendHttp(String url, Map param){
-        return sendHttp(url,param,HttpEnum.GET,HttpConstant.X_WWW_FORM_URLENCODED);
+    public String sendHttp(String url, Map param){
+        return this.sendHttp(url,param,HttpEnum.GET,HttpConstant.X_WWW_FORM_URLENCODED);
     }
 
     /**
@@ -45,8 +46,8 @@ public class HttpUtil {
      * @param type
      * @return
      */
-    public static String sendHttp(String url, Map param, HttpEnum type){
-        return sendHttp(url,param,type,HttpConstant.X_WWW_FORM_URLENCODED,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
+    public String sendHttp(String url, Map param, HttpEnum type){
+        return this.sendHttp(url,param,type,HttpConstant.X_WWW_FORM_URLENCODED,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
     }
 
     /**
@@ -56,8 +57,8 @@ public class HttpUtil {
      * @param contentType
      * @return
      */
-    public static String sendHttp(String url, Map param, String contentType){
-        return sendHttp(url,param,HttpEnum.POST,contentType,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
+    public String sendHttp(String url, Map param, String contentType){
+        return this.sendHttp(url,param,HttpEnum.POST,contentType,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
     }
 
     /**
@@ -68,9 +69,9 @@ public class HttpUtil {
      * @param contentType
      * @return
      */
-    public static String sendHttp(String url, Map param, HttpEnum type,
+    public String sendHttp(String url, Map param, HttpEnum type,
                                   String contentType){
-        return sendHttp(url,param,type,contentType,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
+        return this.sendHttp(url,param,type,contentType,HttpConstant.CONNECTION_TIME,HttpConstant.READ_TIME);
     }
 
     /**
@@ -83,7 +84,7 @@ public class HttpUtil {
      * @param readTime
      * @return
      */
-    public static String sendHttp(String url, Map param, HttpEnum type,
+    public String sendHttp(String url, Map param, HttpEnum type,
                                   String contentType,int connectionTime,int readTime){
         StringBuilder result = new StringBuilder();
         try{
@@ -131,7 +132,7 @@ public class HttpUtil {
         return result.toString();
     }
 
-    private static void setHttpUrlConnectionProperty(HttpURLConnection urlConnection,String contentType,
+    private void setHttpUrlConnectionProperty(HttpURLConnection urlConnection,String contentType,
                                                      int connectionTime,int readTime) throws IOException {
 
         if(contentType != null && !"".equals(contentType)){
@@ -152,7 +153,7 @@ public class HttpUtil {
      * @param param
      * @return
      */
-    private static String changeParam(Map<?,?> param) throws UnsupportedEncodingException {
+    private String changeParam(Map<?,?> param) throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<?,?> entry : param.entrySet()) {
             sb.append(entry.getKey() == null ? "" : entry.getKey().toString());

@@ -1,26 +1,24 @@
 
 
-### v1.1.0
+### v1.1.1
 
-一个RELEASE版本，较为稳定，但是依赖fastjson
+包含v1.1.0的所有功能
 
 #### 新增及优化功能
 
-1、可进行接口行的注解覆盖，如果方法上没有指明，则使用接口上的注解参数，否则使用默认。
+1、解决了返回值类型为String报错问题
 
-2、使用了预加载接口，调用接口更加便捷。
-
-3、使用方法更加简洁。
+2、可支持自定义HTTP请求工具类，默认为自带的SimpleHttpExecutor
 
 #### 使用示例
 
 接口:
 
 ```java
-@ParamUri(url = "http://localhost:8080/mvc")
+@ParamUri(url = "http://localhost:8080/mvc",httpExecutor = SimpleHttpExecutor.class)
 public interface UserDao {
-
-    @ParamUri(url = "/getGetController",requestType = HttpEnum.GET)
+	//除url之外，其他参数方法级别可覆盖类级别
+    @ParamUri(url = "/getGetController",requestType = HttpEnum.GET,httpExecutor = MyHttpExecutor.class)
     Map getUserInfo(@ParamKey(key = "name") String name);
 
     @ParamUri(url = "/getPostController",requestType = HttpEnum.POST)
@@ -31,6 +29,19 @@ public interface UserDao {
 
 }
 
+```
+
+自定义HttpExecutor
+
+```java
+public class MyHttpExecutor implements HttpExecutor {
+
+	public Object sendHttp(HttpUriBean arg0) {
+		
+		return "{'a':'v'}";
+	}
+
+}
 ```
 
 使用方式：

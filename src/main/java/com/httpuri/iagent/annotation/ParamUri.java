@@ -2,6 +2,8 @@ package com.httpuri.iagent.annotation;
 
 import com.httpuri.iagent.constant.HttpConstant;
 import com.httpuri.iagent.constant.HttpEnum;
+import com.httpuri.iagent.request.HttpExecutor;
+import com.httpuri.iagent.request.SimpleHttpExecutor;
 
 import java.lang.annotation.*;
 
@@ -20,5 +22,7 @@ public @interface ParamUri {
     int connectionTime() default HttpConstant.CONNECTION_TIME;
 
     int readTime() default HttpConstant.READ_TIME;
+
+    Class<? extends HttpExecutor> httpExecutor() default SimpleHttpExecutor.class;
 
 }
