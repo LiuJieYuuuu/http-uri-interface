@@ -16,7 +16,7 @@ iagent的RELEASE版本，较为稳定的版本，推荐使用
 
 2、可支持自定义HTTP请求工具类，默认为自带的SimpleHttpExecutor
 
-### v.1.1.2
+### v1.1.2
 1、新增路径传输参数
 
 2、修改了自定义HttpExecutor类的实现方式
