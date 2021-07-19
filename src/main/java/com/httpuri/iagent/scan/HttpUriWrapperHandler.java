@@ -1,14 +1,20 @@
 package com.httpuri.iagent.scan;
 
 import com.httpuri.iagent.annotation.ParamUri;
+import com.httpuri.iagent.annotation.PathKey;
 import com.httpuri.iagent.builder.HttpUriBean;
 import com.httpuri.iagent.builder.HttpUriWrapper;
 import com.httpuri.iagent.request.HttpExecutor;
 import com.httpuri.iagent.request.SimpleHttpExecutor;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.HashMap;
+import java.util.Map;
+
 public class HttpUriWrapperHandler {
 
-    public HttpUriWrapper handleHttpUriBean(ParamUri paramUri, HttpUriWrapper wrapper){
+    protected void handleHttpUriBean(ParamUri paramUri, HttpUriWrapper wrapper){
         HttpUriBean bean = null;
         HttpUriBean.HttpUriBeanBuilder builder = new HttpUriBean.HttpUriBeanBuilder();
         if(paramUri != null)
@@ -25,11 +31,33 @@ public class HttpUriWrapperHandler {
             wrapper = new HttpUriWrapper(bean);
         else
             wrapper.setBean(bean);
-
-        return wrapper;
     }
 
-    public HttpUriWrapper handleHttpExecutor(ParamUri paramUri, HttpUriWrapper wrapper) {
+    protected void handlePathKey(Method method, HttpUriWrapper wrapper){
+        ParamUri annotation = method.getAnnotation(ParamUri.class);
+        String url = annotation.url();
+        Map<String,Integer> argsMap = new HashMap<>();
+        Parameter[] parameters = method.getParameters();
+        for (int i=0; i < parameters.length ; i++){
+            Class<?> type = parameters[i].getType();
+            if(Map.class.equals(type)){
+                continue;
+            }
+            PathKey pathKey = parameters[i].getAnnotation(PathKey.class);
+            if(pathKey == null) continue;
+            String paramKey = pathKey.key();
+            if(url.contains("{" + paramKey + "}")){
+                argsMap.put(paramKey,i);
+            }else{
+                throw new IllegalArgumentException("@PathKey is not found in @ParamUri url");
+            }
+        }
+
+        wrapper.getBean().setPathParams(argsMap);
+
+    }
+
+    protected void handleHttpExecutor(ParamUri paramUri, HttpUriWrapper wrapper) {
         HttpExecutor executor = null;
 
         if(paramUri != null){
@@ -51,7 +79,5 @@ public class HttpUriWrapperHandler {
             wrapper = new HttpUriWrapper(executor);
         else if (executor != null)
             wrapper.setExecutor(executor);
-
-        return wrapper;
     }
 }

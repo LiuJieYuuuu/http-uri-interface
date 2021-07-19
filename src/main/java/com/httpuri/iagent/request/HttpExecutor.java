@@ -4,6 +4,8 @@ import com.httpuri.iagent.builder.HttpUriBean;
 
 public interface HttpExecutor {
 
-    Object sendHttp(HttpUriBean bean);
+    String handlePathKey(HttpUriBean bean, Object[] args);
+
+    Object sendHttp(HttpUriBean bean,Object[] args);
 
 }

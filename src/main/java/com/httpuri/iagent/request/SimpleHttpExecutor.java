@@ -11,13 +11,13 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 
-public class SimpleHttpExecutor implements HttpExecutor {
+public class SimpleHttpExecutor extends AbstractHttpExecutor {
 
-
-    public String sendHttp(HttpUriBean bean){
+    public String sendHttp(HttpUriBean bean,Object[] args){
         if (bean == null)
             throw new IllegalArgumentException("args is null");
-        return this.sendHttp(bean.getUrl(),bean.getParams(), bean.getRequestType(),bean.getContentType(),bean.getConnectionTime(),bean.getReadTime());
+        return this.sendHttp(super.handlePathKey(bean,args),bean.getParams(), bean.getRequestType(),bean.getContentType(),
+                bean.getConnectionTime(),bean.getReadTime());
     }
 
     /**

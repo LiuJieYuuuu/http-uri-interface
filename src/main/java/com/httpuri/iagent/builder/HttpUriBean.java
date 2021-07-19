@@ -19,6 +19,8 @@ public class HttpUriBean implements Cloneable,Serializable {
 
     Map params;
 
+    Map<String,Integer> pathParams;
+
     int connectionTime;
 
     int readTime;
@@ -55,6 +57,14 @@ public class HttpUriBean implements Cloneable,Serializable {
 
     public void setParams(Map params) {
         this.params = params;
+    }
+
+    public Map<String, Integer> getPathParams() {
+        return pathParams;
+    }
+
+    public void setPathParams(Map<String, Integer> pathParams) {
+        this.pathParams = pathParams;
     }
 
     public int getConnectionTime() {
@@ -105,6 +115,8 @@ public class HttpUriBean implements Cloneable,Serializable {
 
         Map params = null;
 
+        Map<String,Integer> pathParams = null;
+
         int connectionTime = HttpConstant.CONNECTION_TIME;
 
         int readTime = HttpConstant.READ_TIME;
@@ -125,6 +137,10 @@ public class HttpUriBean implements Cloneable,Serializable {
             return params;
         }
 
+        public Map<String, Integer> getPathParams() {
+            return pathParams;
+        }
+
         public int getConnectionTime() {
             return connectionTime;
         }
@@ -135,6 +151,10 @@ public class HttpUriBean implements Cloneable,Serializable {
 
         public HttpUriBeanBuilder(){
             super();
+        }
+
+        public static HttpUriBeanBuilder builder(){
+            return new HttpUriBeanBuilder();
         }
 
         public HttpUriBeanBuilder(String url){
@@ -162,6 +182,11 @@ public class HttpUriBean implements Cloneable,Serializable {
             return this;
         }
 
+        public HttpUriBeanBuilder pathParas(Map<String,Integer> pathParams){
+            this.pathParams = pathParams;
+            return this;
+        }
+
         public HttpUriBeanBuilder connectionTime(int connectionTime){
             this.connectionTime = connectionTime;
             return this;
@@ -184,6 +209,7 @@ public class HttpUriBean implements Cloneable,Serializable {
         this.connectionTime = buidler.getConnectionTime();
         this.contentType = buidler.getContentType();
         this.params = buidler.getParams();
+        this.pathParams = buidler.getPathParams();
         this.readTime = buidler.getReadTime();
         this.requestType = buidler.getRequestType();
     }

@@ -58,9 +58,9 @@ public class ClassPathBeanScanner {
 
     private <T> void register(Class<T> cls,Map<Method,HttpUriWrapper> uriWrapperMap){
         ParamUri clsAnno = cls.getAnnotation(ParamUri.class);
-        HttpUriWrapper wrapper = null;
-        wrapper = wrapperHandler.handleHttpUriBean(clsAnno, wrapper);
-        wrapper = wrapperHandler.handleHttpExecutor(clsAnno, wrapper);
+        HttpUriWrapper wrapper = new HttpUriWrapper();
+        wrapperHandler.handleHttpUriBean(clsAnno, wrapper);
+        wrapperHandler.handleHttpExecutor(clsAnno, wrapper);
 
         Method[] methods = cls.getDeclaredMethods();
         for(int i = 0;i < methods.length; i++){
@@ -86,6 +86,7 @@ public class ClassPathBeanScanner {
             /*System.out.println(methods[i] + " url:" + cloneBean.getUrl());*/
             HttpExecutor executor = wrapper.getExecutor();
             HttpUriWrapper childWrapper = new HttpUriWrapper(cloneBean);
+            wrapperHandler.handlePathKey(methods[i],childWrapper);
             if( executor == null || (!methodAnno.httpExecutor().equals(SimpleHttpExecutor.class)
                     && !methodAnno.httpExecutor().equals(executor.getClass())) ){
                 wrapperHandler.handleHttpExecutor(methodAnno, childWrapper);

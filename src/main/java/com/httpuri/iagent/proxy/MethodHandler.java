@@ -17,6 +17,8 @@ public class MethodHandler {
 
     private HttpUriConf conf;
 
+    private ParameterHandler parameterHandler = new ParameterHandler();
+
     public void setConf(HttpUriConf conf) {
         this.conf = conf;
     }
@@ -27,27 +29,15 @@ public class MethodHandler {
      * @param args
      * @return
      */
-    public Object getMethodResult(Method method, Object[] args){
-        Parameter[] parameters = method.getParameters();
-        Map<String, Object> param = new HashMap<>();
-        for (int i = 0 ; i < parameters.length ; i ++){
-            //如果是Map的话，则直接将数据填充至Map参数当中
-            if(!Map.class.equals(parameters[i].getType())){
-                ParamKey annotationKey = parameters[i].getAnnotation(ParamKey.class);
-                param.put(annotationKey.key(),args[i]);
-            }else{
-                param.putAll((Map) args[i]);
-            }
-        }
-
+    protected Object getMethodResult(Method method, Object[] args){
         HttpUriWrapper wrapper = null;
         try {
             wrapper = conf.getUriBeanMap().get(method);
-            wrapper.getBean().setParams(param);
+            wrapper.getBean().setParams(parameterHandler.getParameterMapByMethod(method.getParameters(),args));
         } catch (Exception e) {
             throw new IllegalArgumentException("iagent warn the method is not exists @ParamUri:" + method);
         }
-        Object result = wrapper.getExecutor().sendHttp(wrapper.getBean());
+        Object result = wrapper.getExecutor().sendHttp(wrapper.getBean(),args);
 
         return packagingResultObjectType(result == null ? null : result.toString(), method.getReturnType());
     }
