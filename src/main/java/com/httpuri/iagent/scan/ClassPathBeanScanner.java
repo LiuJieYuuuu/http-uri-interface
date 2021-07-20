@@ -9,8 +9,15 @@ import com.httpuri.iagent.request.HttpExecutor;
 import com.httpuri.iagent.request.SimpleHttpExecutor;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Enumeration;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class ClassPathBeanScanner {
 
@@ -31,25 +38,59 @@ public class ClassPathBeanScanner {
         for(String packages : basePackages){
             try {
                 String path = this.getClass().getResource("/").getPath();
-                String packagePath = packages.replace(".", File.separator);
-                File file = new File(path + packagePath);
-                if(file == null)
-                    throw new IllegalArgumentException(" interface package is not exists: " + (path + packagePath));
-                File[] files = file.listFiles();
-                if(files == null)
-                    throw new IllegalArgumentException(" interface package files is not exists: " + (path + packagePath));
-                for(File f : files){
-                    String classPath = packages + "." + f.getName().replace(".class","");
-                    if(f.isDirectory()){
-                        throw new IllegalArgumentException(" under the package path includes directories:path" + packages);
+                String packagePath = packages.replace(".", "/");
+
+                Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources("/" + packagePath);
+                //当前为jar执行
+                if(resources.hasMoreElements()){
+                    while(resources.hasMoreElements()){
+                        URL url = resources.nextElement();
+                        if("jar".equals(url.getProtocol())){
+                            JarURLConnection urlConnection = (JarURLConnection) url.openConnection();
+                            if(urlConnection != null){
+                                JarFile jarFile = urlConnection.getJarFile();
+                                if (jarFile != null) {
+                                    Enumeration<JarEntry> jarEntries = jarFile.entries();
+                                    while (jarEntries.hasMoreElements()) {
+                                        JarEntry jarEntry = jarEntries.nextElement();
+                                        String jarEntryName = jarEntry.getName();
+                                        if(jarEntryName.contains(packagePath)){
+                                            String fileName = jarEntryName.replace(".class","").replace(packagePath,"");
+                                            if (fileName.startsWith("/"))
+                                                fileName = fileName.substring(1,fileName.length());
+                                            if("".equals(fileName.trim())) continue;
+                                            Class<?> cls = Class.forName(packages + "." + fileName);
+                                            register(cls,uriWrapperMap);
+                                            uriMap.put(cls,proxy.newInstance(cls));
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                    Class<?> cls = Class.forName(classPath);
-                    register(cls,uriWrapperMap);
-                    uriMap.put(cls,proxy.newInstance(cls));
+                }else{
+                    //非jar包形式
+                    File file = new File(path + packagePath);
+                    if(file == null)
+                        throw new IllegalArgumentException(" interface package is not exists: " + (path + packagePath));
+                    File[] files = file.listFiles();
+                    if(files == null)
+                        throw new IllegalArgumentException(" interface package files is not exists: " + (path + packagePath));
+                    for(File f : files){
+                        String classPath = packages + "." + f.getName().replace(".class","");
+                        if(f.isDirectory()){
+                            throw new IllegalArgumentException(" under the package path includes directories:path" + packages);
+                        }
+                        Class<?> cls = Class.forName(classPath);
+                        register(cls,uriWrapperMap);
+                        uriMap.put(cls,proxy.newInstance(cls));
+                    }
                 }
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
