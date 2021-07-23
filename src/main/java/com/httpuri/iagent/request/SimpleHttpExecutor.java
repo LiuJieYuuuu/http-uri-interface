@@ -2,8 +2,9 @@ package com.httpuri.iagent.request;
 
 import com.alibaba.fastjson.JSON;
 import com.httpuri.iagent.builder.HttpUriBean;
-import com.httpuri.iagent.constant.HttpEnum;
 import com.httpuri.iagent.constant.HttpConstant;
+import com.httpuri.iagent.constant.HttpEnum;
+import com.httpuri.iagent.exception.HttpUriArgumentException;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -11,17 +12,26 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 
+/**
+ * <b> the Simple Common Http Request Executor</b>
+ */
 public class SimpleHttpExecutor extends AbstractHttpExecutor {
 
+    /**
+     * <b>specific send to http request url</b>
+     * @param bean
+     * @param args
+     * @return
+     */
     public String sendHttp(HttpUriBean bean,Object[] args){
         if (bean == null)
-            throw new IllegalArgumentException("args is null");
+            throw new HttpUriArgumentException("args is null");
         return this.sendHttp(super.handlePathKey(bean,args),bean.getParams(), bean.getRequestType(),bean.getContentType(),
                 bean.getConnectionTime(),bean.getReadTime());
     }
 
     /**
-     * 默认参数请求
+     * <b>default params</b>
      * @param url
      * @return
      */
@@ -30,7 +40,7 @@ public class SimpleHttpExecutor extends AbstractHttpExecutor {
     }
 
     /**
-     * 采用默认配置
+     * <b>default params</b>
      * @param url
      * @param param
      * @return
@@ -40,7 +50,7 @@ public class SimpleHttpExecutor extends AbstractHttpExecutor {
     }
 
     /**
-     * 采用默认配置
+     * <b>default params</b>
      * @param url
      * @param param
      * @param type
@@ -51,7 +61,7 @@ public class SimpleHttpExecutor extends AbstractHttpExecutor {
     }
 
     /**
-     * 采用默认配置
+     * <b>default params</b>
      * @param url
      * @param param
      * @param contentType
@@ -62,7 +72,7 @@ public class SimpleHttpExecutor extends AbstractHttpExecutor {
     }
 
     /**
-     * 采用默认时间请求
+     * <b>default params</b>
      * @param url
      * @param param
      * @param type
@@ -75,7 +85,7 @@ public class SimpleHttpExecutor extends AbstractHttpExecutor {
     }
 
     /**
-     * 发送HTTP请求
+     * <b>send HTTP Request Url</b>
      * @param url
      * @param param
      * @param type
@@ -98,10 +108,10 @@ public class SimpleHttpExecutor extends AbstractHttpExecutor {
             URL uri = new URL(url);
             HttpURLConnection urlConnection = (HttpURLConnection) uri.openConnection();
             if(type.equals(HttpEnum.GET)){
-                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestMethod(type.getRequestMethodType());
                 setHttpUrlConnectionProperty(urlConnection,contentType,connectionTime,readTime);
-            }else if (type.equals(HttpEnum.POST)){
-                urlConnection.setRequestMethod("POST");
+            }else if (type.equals(HttpEnum.POST) || type.equals(HttpEnum.PUT)){
+                urlConnection.setRequestMethod(type.getRequestMethodType());
                 urlConnection.setDoOutput(true);
                 urlConnection.setDoInput(true);
                 urlConnection.setUseCaches(false);
@@ -132,6 +142,14 @@ public class SimpleHttpExecutor extends AbstractHttpExecutor {
         return result.toString();
     }
 
+    /**
+     * <p>filled with params to HttpConnection</p>
+     * @param urlConnection
+     * @param contentType
+     * @param connectionTime
+     * @param readTime
+     * @throws IOException
+     */
     private void setHttpUrlConnectionProperty(HttpURLConnection urlConnection,String contentType,
                                                      int connectionTime,int readTime) throws IOException {
 
@@ -149,7 +167,8 @@ public class SimpleHttpExecutor extends AbstractHttpExecutor {
     }
 
     /**
-     * 转换Map的参数成GET参数形式，key=value&key=value
+     * <b>change params of Map to get Http Request,
+     * like key=value&key2=value2</b>
      * @param param
      * @return
      */

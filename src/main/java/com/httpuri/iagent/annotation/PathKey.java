@@ -7,6 +7,10 @@ import java.lang.annotation.*;
 @Documented
 public @interface PathKey {
 
-    String key();
+    /**
+     * value is key
+     * @return
+     */
+    String value();
 
 }

@@ -4,6 +4,10 @@ import com.httpuri.iagent.request.HttpExecutor;
 
 import java.io.Serializable;
 
+/**
+ * <p>HttpUri wrapper Bean
+ * support deep clone and serializable</p>
+ */
 public class HttpUriWrapper implements Cloneable,Serializable {
 
     HttpUriBean bean;
@@ -53,10 +57,16 @@ public class HttpUriWrapper implements Cloneable,Serializable {
                 '}';
     }
 
+    /**
+     * <p>deep clone</p>
+     * @return
+     */
     @Override
     public HttpUriWrapper clone() {
         try {
-            return (HttpUriWrapper) super.clone();
+            HttpUriWrapper clone = (HttpUriWrapper) super.clone();
+            clone.setBean(this.bean.clone());
+            return clone;
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
             return null;
