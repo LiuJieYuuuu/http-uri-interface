@@ -1,7 +1,6 @@
 package com.httpuri.iagent.proxy;
 
 import com.httpuri.iagent.annotation.ParamKey;
-import com.httpuri.iagent.builder.HttpUriWrapper;
 
 import java.lang.reflect.Parameter;
 import java.util.HashMap;

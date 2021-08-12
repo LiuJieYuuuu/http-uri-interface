@@ -4,6 +4,7 @@ import com.httpuri.iagent.annotation.ParamUri;
 import com.httpuri.iagent.annotation.PathKey;
 import com.httpuri.iagent.builder.HttpUriBean;
 import com.httpuri.iagent.builder.HttpUriWrapper;
+import com.httpuri.iagent.exception.HttpUriArgumentException;
 import com.httpuri.iagent.request.HttpExecutor;
 import com.httpuri.iagent.request.SimpleHttpExecutor;
 
@@ -49,7 +50,7 @@ public class HttpUriWrapperHandler {
             if(url.contains("{" + paramKey + "}")){
                 argsMap.put(paramKey,i);
             }else{
-                throw new IllegalArgumentException("@PathKey is not found in @ParamUri url");
+                throw new HttpUriArgumentException("@PathKey is not found in @ParamUri url");
             }
         }
 
@@ -68,11 +69,7 @@ public class HttpUriWrapperHandler {
                 try {
                     executor = (HttpExecutor) cls.newInstance();
                 } catch (Exception e) {
-                    try {
-                        throw new IllegalAccessException("Not Found Class:" + cls);
-                    } catch (IllegalAccessException e1) {
-                        e1.printStackTrace();
-                    }
+                    throw new HttpUriArgumentException("Not Found Class:" + cls);
                 }
         }
         if(wrapper == null)

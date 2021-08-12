@@ -1,5 +1,7 @@
 package com.httpuri.iagent.builder;
 
+import com.httpuri.iagent.annotation.ParamKey;
+import com.httpuri.iagent.annotation.ParamUri;
 import com.httpuri.iagent.constant.HttpConstant;
 import com.httpuri.iagent.constant.HttpEnum;
 
@@ -7,22 +9,51 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * 使用建造者模式装载请求数据Bean
+ * <p>http uri information loading to HttpUriBean object,
+ * support deep clone and serializable,use to Builder Pattern to create object
+ * </p>
  */
 public class HttpUriBean implements Cloneable,Serializable {
 
+    /**
+     * http request url
+     */
     String url;
 
+    /**
+     * request meth od type
+     *
+     * see HttpEnum.java
+     */
     HttpEnum requestType;
 
+    /**
+     * Content-Type
+     *
+     * see HttpConstant.java
+     */
     String contentType;
 
+    /**
+     * http parameters
+     */
     Map params;
 
+    /**
+     * key of the url path, and args of method'annotations
+     * eg: http://localhost:80/{param}
+     * like Spring MVC @PathVariable("param")
+     */
     Map<String,Integer> pathParams;
 
+    /**
+     * conection http server time
+     */
     int connectionTime;
 
+    /**
+     * read from http server time
+     */
     int readTime;
 
     private HttpUriBean(){}
@@ -105,6 +136,9 @@ public class HttpUriBean implements Cloneable,Serializable {
         }
     }
 
+    /**
+     * <b>HttpUriBean Builder</b>
+     */
     public static class HttpUriBeanBuilder{
 
         String url;
@@ -203,14 +237,14 @@ public class HttpUriBean implements Cloneable,Serializable {
 
     }
 
-    private HttpUriBean (HttpUriBeanBuilder buidler){
+    private HttpUriBean (HttpUriBeanBuilder builder){
         super();
-        this.url = buidler.getUrl();
-        this.connectionTime = buidler.getConnectionTime();
-        this.contentType = buidler.getContentType();
-        this.params = buidler.getParams();
-        this.pathParams = buidler.getPathParams();
-        this.readTime = buidler.getReadTime();
-        this.requestType = buidler.getRequestType();
+        this.url = builder.getUrl();
+        this.connectionTime = builder.getConnectionTime();
+        this.contentType = builder.getContentType();
+        this.params = builder.getParams();
+        this.pathParams = builder.getPathParams();
+        this.readTime = builder.getReadTime();
+        this.requestType = builder.getRequestType();
     }
 }

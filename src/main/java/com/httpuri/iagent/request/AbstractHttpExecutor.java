@@ -1,13 +1,23 @@
 package com.httpuri.iagent.request;
 
 import com.httpuri.iagent.builder.HttpUriBean;
+import com.httpuri.iagent.exception.HttpUriArgumentException;
 import com.httpuri.iagent.util.MapUtil;
 import com.httpuri.iagent.util.StringUtil;
 
 import java.util.Map;
 
+/**
+ * <b> the Abstract Common Http Request Executor</b>
+ */
 public abstract class AbstractHttpExecutor implements HttpExecutor {
 
+    /**
+     * <b>specific handle http request url path params</b>
+     * @param bean
+     * @param args
+     * @return
+     */
     @Override
     public String handlePathKey(HttpUriBean bean, Object[] args) {
         String url = bean.getUrl();
@@ -25,7 +35,7 @@ public abstract class AbstractHttpExecutor implements HttpExecutor {
                 url = url.replace("{" + param + "}", MapUtil.getNotNullString(params,param));
             }
             if(url.contains("{") && url.contains("}"))
-                throw new IllegalArgumentException("the " + url + " contains pathkey not found in args");
+                throw new HttpUriArgumentException("the " + url + " contains pathkey not found in args");
         }
         return url;
     }

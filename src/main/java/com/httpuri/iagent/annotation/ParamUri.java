@@ -7,13 +7,25 @@ import com.httpuri.iagent.request.SimpleHttpExecutor;
 
 import java.lang.annotation.*;
 
-
+/**
+ * <p>create uri</p>
+ */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD,ElementType.TYPE})
 @Documented
 public @interface ParamUri {
 
-    String url();
+    /**
+     * value is url
+     * @return
+     */
+    String value() default "";
+
+    /**
+     * url is value
+     * @return
+     */
+    String url() default "";
 
     HttpEnum requestType() default HttpEnum.GET;
 
@@ -23,6 +35,10 @@ public @interface ParamUri {
 
     int readTime() default HttpConstant.READ_TIME;
 
+    /**
+     * default use to SimpleHttpExecutor.java
+     * @return
+     */
     Class<? extends HttpExecutor> httpExecutor() default SimpleHttpExecutor.class;
 
 }

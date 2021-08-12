@@ -2,13 +2,10 @@ package com.httpuri.iagent.proxy;
 
 import com.alibaba.fastjson.JSON;
 import com.httpuri.iagent.HttpUriConf;
-import com.httpuri.iagent.annotation.ParamKey;
 import com.httpuri.iagent.builder.HttpUriWrapper;
+import com.httpuri.iagent.exception.HttpUriArgumentException;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -35,7 +32,7 @@ public class MethodHandler {
             wrapper = conf.getUriBeanMap().get(method);
             wrapper.getBean().setParams(parameterHandler.getParameterMapByMethod(method.getParameters(),args));
         } catch (Exception e) {
-            throw new IllegalArgumentException("iagent warn the method is not exists @ParamUri:" + method);
+            throw new HttpUriArgumentException("iagent warn the method is not exists @ParamUri:" + method);
         }
         Object result = wrapper.getExecutor().sendHttp(wrapper.getBean(),args);
 
@@ -52,7 +49,7 @@ public class MethodHandler {
             else
                 return JSON.parseObject(result,cls);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Not Support JSON Type Change");
+            throw new HttpUriArgumentException("Not Support JSON Type Change");
         }
     }
 

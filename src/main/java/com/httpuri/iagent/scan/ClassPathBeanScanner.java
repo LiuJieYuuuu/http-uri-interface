@@ -4,6 +4,7 @@ import com.httpuri.iagent.HttpUriConf;
 import com.httpuri.iagent.annotation.ParamUri;
 import com.httpuri.iagent.builder.HttpUriBean;
 import com.httpuri.iagent.builder.HttpUriWrapper;
+import com.httpuri.iagent.exception.HttpUriArgumentException;
 import com.httpuri.iagent.proxy.UriProxy;
 import com.httpuri.iagent.request.HttpExecutor;
 import com.httpuri.iagent.request.SimpleHttpExecutor;
@@ -13,27 +14,53 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * <b>inteerface is the must sacnnering,it's to be UriProxy and UriInvocationHandler</b>
+ *
+ * see UriProxy.java
+ * see UriInvocationHandler.java
+ */
 public class ClassPathBeanScanner {
 
-    //处理代理对象
+    /**
+     * <b>use UriProxy to create proxy class</b>
+     */
     private UriProxy proxy;
 
+    /**
+     * <b>global configuration</b>
+     */
     private HttpUriConf conf;
 
+
+    /**
+     * <b>HttpUriWrapperHandler is specialized HttpUriWrapper</b>
+     */
     private HttpUriWrapperHandler wrapperHandler = new HttpUriWrapperHandler();
 
+    /**
+     * <b>this is global Configuration's Constructor</b>
+     * @param conf
+     */
     public ClassPathBeanScanner(HttpUriConf conf){
         super();
         this.conf = conf;
         proxy = new UriProxy(conf);
     }
 
+    /**
+     * <b>scanner interface of base packages ,
+     * and load to wrapper map </b>
+     * @param uriMap
+     * @param uriWrapperMap
+     * @param basePackages
+     */
     public void scannerPackages(Map<Class,Object> uriMap, Map<Method,HttpUriWrapper> uriWrapperMap, String... basePackages) {
         for(String packages : basePackages){
             try {
@@ -41,7 +68,7 @@ public class ClassPathBeanScanner {
                 String packagePath = packages.replace(".", "/");
 
                 Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources("/" + packagePath);
-                //当前为jar执行
+                //at present is jar running
                 if(resources.hasMoreElements()){
                     while(resources.hasMoreElements()){
                         URL url = resources.nextElement();
@@ -66,25 +93,13 @@ public class ClassPathBeanScanner {
                                     }
                                 }
                             }
+                        }else if("file".equals(url.getProtocol())){
+                            loadFileTypeScanner(path,packagePath,packages,uriMap,uriWrapperMap);
                         }
                     }
                 }else{
-                    //非jar包形式
-                    File file = new File(path + packagePath);
-                    if(file == null)
-                        throw new IllegalArgumentException(" interface package is not exists: " + (path + packagePath));
-                    File[] files = file.listFiles();
-                    if(files == null)
-                        throw new IllegalArgumentException(" interface package files is not exists: " + (path + packagePath));
-                    for(File f : files){
-                        String classPath = packages + "." + f.getName().replace(".class","");
-                        if(f.isDirectory()){
-                            throw new IllegalArgumentException(" under the package path includes directories:path" + packages);
-                        }
-                        Class<?> cls = Class.forName(classPath);
-                        register(cls,uriWrapperMap);
-                        uriMap.put(cls,proxy.newInstance(cls));
-                    }
+                    //at present not jar running
+                    loadFileTypeScanner(path,packagePath,packages,uriMap,uriWrapperMap);
                 }
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
@@ -97,6 +112,12 @@ public class ClassPathBeanScanner {
         }
     }
 
+    /**
+     * <b>handle annotation of interface is loading to httpUriWrapper </b>
+     * @param cls
+     * @param uriWrapperMap
+     * @param <T>
+     */
     private <T> void register(Class<T> cls,Map<Method,HttpUriWrapper> uriWrapperMap){
         ParamUri clsAnno = cls.getAnnotation(ParamUri.class);
         HttpUriWrapper wrapper = new HttpUriWrapper();
@@ -104,21 +125,29 @@ public class ClassPathBeanScanner {
         wrapperHandler.handleHttpExecutor(clsAnno, wrapper);
 
         Method[] methods = cls.getDeclaredMethods();
+        /**
+         * handle method of interface is recover annotation of interface
+         */
         for(int i = 0;i < methods.length; i++){
             ParamUri methodAnno = methods[i].getAnnotation(ParamUri.class);
             if(methodAnno == null){
-                System.out.println("iagent warn the method is not exsits @ParamUri:" + methods[i]);
+                System.out.println("iagent warn the method is not exists @ParamUri:" + methods[i]);
                 continue;
             }
             HttpUriBean cloneBean = wrapper.getBean().clone();
             String url = methodAnno.url();
-            if(cloneBean.getUrl() == null)
+            if(url == null || Objects.equals("",url))
+                url = methodAnno.value();
+            if(url == null || Objects.equals("",url))
+                throw new NullPointerException("@ParamUri'url is Null");
+            if(cloneBean.getUrl() == null) {
                 cloneBean.setUrl(methodAnno.url());
-            else{
-                if(cloneBean.getUrl().endsWith("///"))
+            } else {
+                if(cloneBean.getUrl().endsWith("///")) {
                     cloneBean.setUrl(cloneBean.getUrl() + url);
-                else
-                    cloneBean.setUrl(cloneBean.getUrl() + (url.startsWith("///") ? url.substring(1,url.length()) : url));
+                }else {
+                    cloneBean.setUrl(cloneBean.getUrl() + (url.startsWith("///") ? url.substring(1, url.length()) : url));
+                }
             }
             cloneBean.setConnectionTime(methodAnno.connectionTime());
             cloneBean.setContentType(methodAnno.contentType());
@@ -140,5 +169,34 @@ public class ClassPathBeanScanner {
 
     }
 
+    /**
+     * <p>at present not jar running,load file</p>
+     * @param path
+     * @param packagePath
+     * @param packages
+     * @param uriMap
+     * @param uriWrapperMap
+     * @throws ClassNotFoundException
+     */
+    private void loadFileTypeScanner(String path,String packagePath,String packages,
+                                     Map<Class,Object> uriMap, Map<Method,HttpUriWrapper> uriWrapperMap)
+            throws ClassNotFoundException {
+        //at present not jar running
+        File file = new File(path + packagePath);
+        if(file == null)
+            throw new HttpUriArgumentException(" interface package is not exists: " + (path + packagePath));
+        File[] files = file.listFiles();
+        if(files == null)
+            throw new HttpUriArgumentException(" interface package files is not exists: " + (path + packagePath));
+        for(File f : files){
+            String classPath = packages + "." + f.getName().replace(".class","");
+            if(f.isDirectory()){
+                throw new HttpUriArgumentException(" under the package path includes directories:path" + packages);
+            }
+            Class<?> cls = Class.forName(classPath);
+            register(cls,uriWrapperMap);
+            uriMap.put(cls,proxy.newInstance(cls));
+        }
+    }
 
 }

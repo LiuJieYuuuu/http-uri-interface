@@ -56,7 +56,9 @@ public class HttpUriWrapper implements Cloneable,Serializable {
     @Override
     public HttpUriWrapper clone() {
         try {
-            return (HttpUriWrapper) super.clone();
+            HttpUriWrapper clone = (HttpUriWrapper) super.clone();
+            clone.setBean(this.bean.clone());
+            return clone;
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
             return null;
