@@ -23,14 +23,14 @@ public class HttpUriBean implements Cloneable,Serializable {
     /**
      * request meth od type
      *
-     * see HttpEnum.java
+     * @see HttpEnum
      */
     HttpEnum requestType;
 
     /**
      * Content-Type
      *
-     * see HttpConstant.java
+     * @see HttpConstant
      */
     String contentType;
 

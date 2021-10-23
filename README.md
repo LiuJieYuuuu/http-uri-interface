@@ -1,14 +1,22 @@
 
 
-### v1.1.4
+### v1.2.0
 
-包含v1.1.3的所有功能
+基于v1.1.4版本进行升级
 
-#### 修复功能
+#### 新增/修复功能
 
-1、修复了在极端情况下可执行jar包里面，扫描并调用接口报错问题
+1、修改了注解形式，可以采用默认数据
 
-2、新增自定义异常，同一采用自定义异常进行抛错
+2、增加JSON以及日志框架适配，避免框架强侵入性
+
+​	适配框架如下：JSON适配了fastjson、gson以及jackson；日志框架适配了slf4j、commons-logging、log4j、log4j2、jdk的log以及控制台日志
+
+3、修改动态代理的命名方式
+
+4、修复了高并发情况下接口重复代理问题
+
+5、优化执行器重复创建，可复用执行器
 
 #### 使用示例
 
@@ -19,16 +27,16 @@
 public interface UserDao {
 	//除url之外，其他参数方法级别可覆盖类级别
     @ParamUri(url = "/getGetController",requestType = HttpEnum.GET,httpExecutor = MyHttpExecutor.class)
-    Map getUserInfo(@ParamKey(key = "name") String name);
+    Map getUserInfo(@ParamKey("name") String name);
 
     @ParamUri(url = "/getPostController",requestType = HttpEnum.POST)
-    Map getUserPostInfo(@ParamKey(key = "name") String name);
+    Map getUserPostInfo(@ParamKey("name") String name);
 
     @ParamUri(url = "/getPostControllerJson",requestType = HttpEnum.POST,contentType = HttpConstant.APPLICATION_JSON_UTF8)
     Map getUserInfo(Map param);
     
     @ParamUri(url = "/getPathVariable/{id}")
-    Map getPathVariable(@PathKey(key = "id") String key,@ParamKey(key="age")Integer age);
+    Map getPathVariable(@PathKey("id") String key,@ParamKey(key="age")Integer age);
     //可自动查找Map参数在路径上的参数名称
     @ParamUri(url = "/getPathVariable/{id}")
     Map getPathVariable(Map map);

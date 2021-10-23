@@ -18,7 +18,7 @@ public class ParameterHandler {
             if(!Map.class.equals(parameters[i].getType())){
                 ParamKey annotationKey = parameters[i].getAnnotation(ParamKey.class);
                 if(annotationKey == null) continue;
-                param.put(annotationKey.key(),args[i]);
+                param.put(annotationKey.value(),args[i]);
             }else{
                 param.putAll((Map) args[i]);
             }

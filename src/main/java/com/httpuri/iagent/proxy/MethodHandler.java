@@ -1,14 +1,17 @@
 package com.httpuri.iagent.proxy;
 
-import com.alibaba.fastjson.JSON;
 import com.httpuri.iagent.HttpUriConf;
 import com.httpuri.iagent.builder.HttpUriWrapper;
 import com.httpuri.iagent.exception.HttpUriArgumentException;
+import com.httpuri.iagent.exception.JsonException;
+import com.httpuri.iagent.json.JSON;
+import com.httpuri.iagent.logging.LogFactory;
+import com.httpuri.iagent.logging.Logger;
 
 import java.lang.reflect.Method;
 
 /**
- *
+ * Method Handler
  */
 public class MethodHandler {
 
@@ -16,12 +19,14 @@ public class MethodHandler {
 
     private ParameterHandler parameterHandler = new ParameterHandler();
 
+    private static final Logger logger = LogFactory.getLogger(MethodHandler.class);
+
     public void setConf(HttpUriConf conf) {
         this.conf = conf;
     }
 
     /**
-     * 根据方法上的注解获取请求结果集
+     * get request result by method annotation
      * @param method
      * @param args
      * @return
@@ -32,6 +37,7 @@ public class MethodHandler {
             wrapper = conf.getUriBeanMap().get(method);
             wrapper.getBean().setParams(parameterHandler.getParameterMapByMethod(method.getParameters(),args));
         } catch (Exception e) {
+            logger.error("iagent warn the method is not exists @ParamUri:" + method);
             throw new HttpUriArgumentException("iagent warn the method is not exists @ParamUri:" + method);
         }
         Object result = wrapper.getExecutor().sendHttp(wrapper.getBean(),args);
@@ -39,7 +45,13 @@ public class MethodHandler {
         return packagingResultObjectType(result == null ? null : result.toString(), method.getReturnType());
     }
 
-
+    /**
+     * change result data to Json Object
+     * @param result
+     * @param cls
+     * @param <T>
+     * @return
+     */
     private <T> T packagingResultObjectType(String result,Class<T> cls){
         try {
             if(result == null)
@@ -47,9 +59,10 @@ public class MethodHandler {
             else if(cls.equals(String.class))
                 return (T) result;
             else
-                return JSON.parseObject(result,cls);
+                return JSON.getJSONObject(result, cls);
         } catch (Exception e) {
-            throw new HttpUriArgumentException("Not Support JSON Type Change");
+            logger.error("Not Support JSON Type Change,Result:[" + result + "], Class:[" + cls + "]");
+            throw new JsonException("Not Support JSON Type Change");
         }
     }
 

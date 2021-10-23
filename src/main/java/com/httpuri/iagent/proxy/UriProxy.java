@@ -2,31 +2,42 @@ package com.httpuri.iagent.proxy;
 
 import com.httpuri.iagent.HttpUriConf;
 
-import java.lang.reflect.Proxy;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 
 /**
- * <p>proxy implementation class</p>
+ * <p>dynamic proxy implementation class ,it's InvocationHandler Class</p>
  *
- * see UriInvocationHandler.java
+ * @see UriProxyFactory
  */
-public class UriProxy {
+public class UriProxy implements InvocationHandler {
 
     private HttpUriConf conf;
 
+    /**
+     * <p>method of interface handler class</p>
+     */
+    private MethodHandler methodHandler = new MethodHandler();
+
     public UriProxy(HttpUriConf conf){
-        super();
         this.conf = conf;
     }
 
     /**
-     * <b> create Object of interface by Dynamic Proxy </b>
-     * @param cls
-     * @param <T>
+     * <p>Dynamic Proxy real run function</p>
+     * @param proxy
+     * @param method
+     * @param args
      * @return
+     * @throws Throwable
      */
-    public <T> T newInstance(Class<T> cls){
-        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),new Class[]{cls},
-                new UriInvocationHandler(conf));
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if(Object.class.equals(method.getDeclaringClass())){
+            return method.invoke(this,args);
+        }else{
+            methodHandler.setConf(conf);
+            return methodHandler.getMethodResult(method,args);
+        }
     }
 
 }

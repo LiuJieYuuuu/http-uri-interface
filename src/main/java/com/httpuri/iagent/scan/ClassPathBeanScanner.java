@@ -5,7 +5,9 @@ import com.httpuri.iagent.annotation.ParamUri;
 import com.httpuri.iagent.builder.HttpUriBean;
 import com.httpuri.iagent.builder.HttpUriWrapper;
 import com.httpuri.iagent.exception.HttpUriArgumentException;
-import com.httpuri.iagent.proxy.UriProxy;
+import com.httpuri.iagent.logging.LogFactory;
+import com.httpuri.iagent.logging.Logger;
+import com.httpuri.iagent.proxy.UriProxyFactory;
 import com.httpuri.iagent.request.HttpExecutor;
 import com.httpuri.iagent.request.SimpleHttpExecutor;
 
@@ -21,17 +23,19 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * <b>inteerface is the must sacnnering,it's to be UriProxy and UriInvocationHandler</b>
+ * <b>interface is the must scanner,it's to be UriProxyFactory and UriProxy</b>
  *
+ * see UriProxyFactory.java
  * see UriProxy.java
- * see UriInvocationHandler.java
  */
 public class ClassPathBeanScanner {
 
+    private static final Logger logger = LogFactory.getLogger(ClassPathBeanScanner.class);
+
     /**
-     * <b>use UriProxy to create proxy class</b>
+     * <b>use UriProxyFactory to create proxy factory class</b>
      */
-    private UriProxy proxy;
+    private UriProxyFactory proxyFactory;
 
     /**
      * <b>global configuration</b>
@@ -42,7 +46,7 @@ public class ClassPathBeanScanner {
     /**
      * <b>HttpUriWrapperHandler is specialized HttpUriWrapper</b>
      */
-    private HttpUriWrapperHandler wrapperHandler = new HttpUriWrapperHandler();
+    private HttpUriWrapperHandler wrapperHandler;
 
     /**
      * <b>this is global Configuration's Constructor</b>
@@ -51,7 +55,8 @@ public class ClassPathBeanScanner {
     public ClassPathBeanScanner(HttpUriConf conf){
         super();
         this.conf = conf;
-        proxy = new UriProxy(conf);
+        proxyFactory = new UriProxyFactory(conf);
+        wrapperHandler = new HttpUriWrapperHandler(conf);
     }
 
     /**
@@ -88,7 +93,10 @@ public class ClassPathBeanScanner {
                                             if("".equals(fileName.trim())) continue;
                                             Class<?> cls = Class.forName(packages + "." + fileName);
                                             register(cls,uriWrapperMap);
-                                            uriMap.put(cls,proxy.newInstance(cls));
+                                            if (logger.isDebugEnabled()) {
+                                                logger.debug("iagent load: " + fileName);
+                                            }
+                                            uriMap.put(cls,proxyFactory.newInstance(cls));
                                         }
                                     }
                                 }
@@ -131,15 +139,17 @@ public class ClassPathBeanScanner {
         for(int i = 0;i < methods.length; i++){
             ParamUri methodAnno = methods[i].getAnnotation(ParamUri.class);
             if(methodAnno == null){
-                System.out.println("iagent warn the method is not exists @ParamUri:" + methods[i]);
+                logger.warn("iagent warn the method is not exists @ParamUri:" + methods[i]);
                 continue;
             }
             HttpUriBean cloneBean = wrapper.getBean().clone();
             String url = methodAnno.url();
             if(url == null || Objects.equals("",url))
                 url = methodAnno.value();
-            if(url == null || Objects.equals("",url))
-                throw new NullPointerException("@ParamUri'url is Null");
+            if(url == null || Objects.equals("",url)) {
+                logger.error("@ParamUri#url is Null");
+                throw new NullPointerException("@ParamUri#url is Null");
+            }
             if(cloneBean.getUrl() == null) {
                 cloneBean.setUrl(methodAnno.url());
             } else {
@@ -153,6 +163,8 @@ public class ClassPathBeanScanner {
             cloneBean.setContentType(methodAnno.contentType());
             cloneBean.setReadTime(methodAnno.readTime());
             cloneBean.setRequestType(methodAnno.requestType());
+            if (logger.isDebugEnabled())
+                logger.debug(methods[i] + " url:" + cloneBean.getUrl());
             /*System.out.println(methods[i] + " url:" + cloneBean.getUrl());*/
             HttpExecutor executor = wrapper.getExecutor();
             HttpUriWrapper childWrapper = new HttpUriWrapper(cloneBean);
@@ -165,7 +177,6 @@ public class ClassPathBeanScanner {
             }
             uriWrapperMap.put(methods[i],childWrapper);
         }
-
 
     }
 
@@ -193,9 +204,12 @@ public class ClassPathBeanScanner {
             if(f.isDirectory()){
                 throw new HttpUriArgumentException(" under the package path includes directories:path" + packages);
             }
+            if (logger.isDebugEnabled()) {
+                logger.debug("iagent load: " + classPath);
+            }
             Class<?> cls = Class.forName(classPath);
             register(cls,uriWrapperMap);
-            uriMap.put(cls,proxy.newInstance(cls));
+            uriMap.put(cls,proxyFactory.newInstance(cls));
         }
     }
 

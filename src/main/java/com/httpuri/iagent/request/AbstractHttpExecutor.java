@@ -28,7 +28,7 @@ public abstract class AbstractHttpExecutor implements HttpExecutor {
             Integer value = entry.getValue();
             url = url.replace("{" + key + "}",args[value].toString());
         }
-        if(url.contains("{") && url.contains("}")){//可能存在于Map的数据当中
+        if(url.contains("{") && url.contains("}")){//may storage in map data
             Map params = bean.getParams();
             String param = null;
             while((param = StringUtil.getStringByTags(url,"{","}")) != null && !"".equals(param)){
